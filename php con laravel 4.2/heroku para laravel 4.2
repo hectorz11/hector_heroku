@@ -1,0 +1,151 @@
+[hector@toshiba ~]$ heroku login
+	Enter your Heroku credentials.
+	Email: hector.rz11@gmail.com
+	Password (typing will be hidden): [your password]
+	Authentication successful.
+[hector@toshiba foldagram]$ git init
+Initialized empty Git repository in /opt/lampp/htdocs/laravel/foldagram/.git/
+[hector@toshiba foldagram]$ git add .
+[hector@toshiba foldagram]$ git commit -m "aplicacion Foldagram"
+[hector@toshiba foldagram]$ git remote add origin https://github.com/hectorz11/laravel_foldagram.git
+[hector@toshiba foldagram]$ git status
+	On branch master
+	nothing to commit, working directory clean
+[hector@toshiba foldagram]$ git push -u origin master
+	Counting objects: 211, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (191/191), done.
+	Writing objects: 100% (211/211), 2.56 MiB | 62.00 KiB/s, done.
+	Total 211 (delta 14), reused 0 (delta 0)
+	To https://github.com/hectorz11/laravel_foldagram.git
+	 * [new branch]      master -> master
+	Branch master set up to track remote branch master from origin.
+[hector@toshiba foldagram]$ sudo nano .gitignore 
+	[borrar el 'composer.lock' de .gitignore]
+[hector@toshiba foldagram]$ sudo nano Procfile
+	[colocar la siguiente linea de codigo]
+	web: vendor/bin/heroku-php-apache2 public/
+[hector@toshiba foldagram]$ git add .
+[hector@toshiba foldagram]$ git commit -m "Commit inicial de Laravel sobre Heroku"
+	[master 11ff150] Commit inicial de Laravel sobre Heroku
+	 3 files changed, 2415 insertions(+), 1 deletion(-)
+	 create mode 100644 Procfile
+	 create mode 100644 composer.lock
+[hector@toshiba foldagram]$ git push origin master
+	Counting objects: 5, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (4/4), done.
+	Writing objects: 100% (5/5), 10.43 KiB | 0 bytes/s, done.
+	Total 5 (delta 2), reused 0 (delta 0)
+	To https://github.com/hectorz11/laravel_foldagram.git
+	   ffe99e6..11ff150  master -> master
+[hector@toshiba foldagram]$ heroku create
+	Creating limitless-caverns-2645... done, stack is cedar-14
+	https://limitless-caverns-2645.herokuapp.com/ | https://git.heroku.com/limitless-caverns-2645.git
+	Git remote heroku added
+[hector@toshiba foldagram]$ git push heroku master
+	Counting objects: 216, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (195/195), done.
+	Writing objects: 100% (216/216), 2.57 MiB | 34.00 KiB/s, done.
+	Total 216 (delta 16), reused 0 (delta 0)
+	...
+
+[hector@toshiba foldagram]$ heroku addons:add heroku-postgresql:dev
+	Adding heroku-postgresql:dev on limitless-caverns-2645... done, v5 (free)
+	Attached as HEROKU_POSTGRESQL_MAUVE_URL
+	Database has been created and is available
+	 ! This database is empty. If upgrading, you can transfer
+	 ! data from another database with pgbackups:restore.
+	Use `heroku addons:docs heroku-postgresql` to view documentation.
+[hector@toshiba foldagram]$ heroku config | grep HEROKU_POSTGRESQL
+	HEROKU_POSTGRESQL_MAUVE_URL: postgres://frujltecpqonzr:Vvi7Zvk-G45XKa6NilEzGNTKj3@ec2-54-163-225-82.compute-1.amazonaws.com:5432/d970fao8fbf5ik
+	... recordar que la varible dada estara ubicada en el archivo app/config/heroku/database.php
+	...
+
+[hector@toshiba foldagram]$ sudo nano bootstrap/start.php 
+	... vamos editar boostrap/start.php y detectaremos environments y colocaremos:
+	$env = $app->detectEnvironment(function()
+	{
+	/*	'local' => array('your-machine-name'),*/
+		return getenv('APP_ENV') ?: 'local';
+	});
+	...
+
+[hector@toshiba foldagram]$ mkdir app/config/heroku
+[hector@toshiba foldagram]$ sudo nano app/config/heroku/database.php
+	... colocamos el siguiente codigo
+	<?php
+	$url = parse_url(getenv("HEROKU_POSTGRESQL_MAUVE_URL"));
+
+	$host = $url["host"];
+	$username = $url["user"];
+	$password = $url["pass"];
+	$database = substr($url["path"], 1);
+
+	return array(
+		'connections' => array(
+			'pgsql' => array(
+				'driver'	=> 'pgsql',
+				'host'		=> $host,
+				'database'	=> $database,
+				'username'	=> $username,
+				'password'	=> $password,
+				'charset' 	=> 'utf8',
+				'prefix'	=> '',
+				'schema'	=> 'public',
+			),
+		),
+	);
+
+	*** recordar que en el archivo app/config/database.php debe estar por defecto esta linea de codigo
+		'default' => 'pgsql',
+
+[hector@toshiba foldagram]$ git add .
+[hector@toshiba foldagram]$ git commit -m "Configuracion de heroku database"
+	[master 7cbd7a3] Configuracion de heroku database
+	 2 files changed, 24 insertions(+), 2 deletions(-)
+	 create mode 100644 app/config/heroku/database.php
+[hector@toshiba foldagram]$ git push origin master
+	Counting objects: 8, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (7/7), done.
+	Writing objects: 100% (8/8), 883 bytes | 0 bytes/s, done.
+	Total 8 (delta 5), reused 0 (delta 0)
+	To https://github.com/hectorz11/laravel_foldagram.git
+	   11ff150..7cbd7a3  master -> master
+[hector@toshiba foldagram]$ git push heroku master
+	Counting objects: 8, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (7/7), done.
+	Writing objects: 100% (8/8), 883 bytes | 0 bytes/s, done.
+	Total 8 (delta 5), reused 0 (delta 0)
+	...
+
+[hector@toshiba foldagram]$ sudo heroku config:set APP_ENV=heroku
+	Setting config vars and restarting limitless-caverns-2645... done, v7
+	APP_ENV: heroku
+[hector@toshiba foldagram]$ sudo heroku run php artisan migrate --package=cartalyst/sentry
+	Running `php artisan migrate --package=cartalyst/sentry` attached to terminal... up, run.3923
+	Migration table created successfully.
+	Migrated: 2012_12_06_225921_migration_cartalyst_sentry_install_users
+	Migrated: 2012_12_06_225929_migration_cartalyst_sentry_install_groups
+	Migrated: 2012_12_06_225945_migration_cartalyst_sentry_install_users_groups_pivot
+	Migrated: 2012_12_06_225988_migration_cartalyst_sentry_install_throttle
+[hector@toshiba foldagram]$ sudo heroku run php artisan migrate
+	Running `php artisan migrate` attached to terminal... up, run.6738
+	Migrated: 2014_04_01_144644_create_subscribe_table
+	Migrated: 2014_04_14_141559_create_foldagrams_table
+	Migrated: 2014_04_14_141628_create_recipients_table
+	Migrated: 2015_02_22_193130_create_credits_table
+	Migrated: 2015_02_22_193607_create_user_credit_orders_table
+[hector@toshiba foldagram]$ heroku open
+	Opening limitless-caverns-2645... done
+
+para mas informacion ver la siguiente pagina web
+http://es.slideshare.net/esolves/deploy-laravel-on-heroku
+
+
+
+
+
